@@ -5,15 +5,20 @@ import { useState } from 'react';
 import users from './api/users';
 import { Todo } from './components/types/Todo';
 
+const completedTodos: Todo[] = todosFromServer.map(todo => ({
+  ...todo,
+  user: users.find(user => user.id === todo.userId)!,
+}));
+
 export const App = () => {
-  const [todos, setTodos] = useState<Todo[]>(todosFromServer);
+  const [todos, setTodos] = useState<Todo[]>(completedTodos);
   const [title, setTitle] = useState('');
   const [userId, setUserId] = useState(0);
   const [titleError, setTitleError] = useState(false);
   const [idError, setIdError] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
 
     let valid = true;
 
@@ -36,11 +41,14 @@ export const App = () => {
       title: title.trim(),
       completed: false,
       userId,
+      user: users.find(u => u.id === userId)!,
     };
 
     setTodos(prev => [...prev, newTodo]);
     setTitle('');
     setUserId(0);
+    setTitleError(false);
+    setIdError(false);
   };
 
   return (
@@ -56,8 +64,8 @@ export const App = () => {
               data-cy="titleInput"
               placeholder="Enter a title"
               value={title}
-              onChange={e => {
-                setTitle(e.target.value);
+              onChange={event => {
+                setTitle(event.target.value);
                 setTitleError(false);
               }}
             />
@@ -71,8 +79,8 @@ export const App = () => {
             <select
               data-cy="userSelect"
               value={userId}
-              onChange={e => {
-                setUserId(+e.target.value);
+              onChange={event => {
+                setUserId(+event.target.value);
                 setIdError(false);
               }}
             >
@@ -94,7 +102,7 @@ export const App = () => {
         </button>
       </form>
 
-      <TodoList todosFromServer={todos} />
+      <TodoList todos={todos} />
     </div>
   );
 };
